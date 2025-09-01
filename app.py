@@ -9,7 +9,7 @@ import langchain
 
 load_dotenv()
 
-# LangChainのデバッグを有効化
+# LangChainのデバッグを有効化（必要時はTrueに変更）
 langchain.debug = False
 
 app = App(
