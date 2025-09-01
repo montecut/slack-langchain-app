@@ -9,8 +9,8 @@ import langchain
 
 load_dotenv()
 
-# LangChainのデバッグを有効化（必要時はTrueに変更）
-langchain.debug = False
+# LangChainのデバッグを有効化
+langchain.debug = True
 
 app = App(
     token=os.environ["SLACK_BOT_TOKEN"]
