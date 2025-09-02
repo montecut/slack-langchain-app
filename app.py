@@ -2,6 +2,8 @@ import os
 import re
 import time
 import langchain
+import json
+import logging
 from typing import Any
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -12,7 +14,7 @@ from langchain.schema import LLMResult
 from langchain_openai import ChatOpenAI
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-
+from slack_bolt.adapter.aws_lambda import SlackRequestHandler
 
 CHAT_UPDATE_INTERVAL_SEC = 1
 
@@ -20,6 +22,12 @@ load_dotenv()
 
 # LangChainのデバッグを有効化
 langchain.debug = True
+
+SlackRequestHandler.clear_all_log_handlers()
+logging.basicConfig(
+    format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 app = App(
     signing_secret=os.environ["SLACK_SIGNING_SECRET"],
@@ -96,3 +104,17 @@ app.event("app_mention")(ack=just_ack, lazy=[handle_mention])
 
 if __name__ == "__main__":
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+
+def handler(event, context):
+    logger.info("handler called")
+    header = event["headers"]
+    logger.info(json.dumps(header))
+
+    if "x-slack-retry-num" in header:
+        logger.info("SKIP > x-slack-retry-num: %s", header["x-slack-retry-num"])
+        return 200
+
+    # AWS Lambda 環境のリクエスト情報を app が処理できるよう変換してくれるアダプター
+    slack_handler = SlackRequestHandler(app=app)
+    # 応答はそのまま AWS Lambda の戻り値として返せます
+    return slack_handler.handle(event, context)
