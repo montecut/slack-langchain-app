@@ -46,7 +46,7 @@ class SlackStreamingCallbackHandler(BaseCallbackHandler):
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
         app.client.chat_update(channel=self.channel, ts=self.ts, text=self.message)
 
-@app.event("app_mention")
+# @app.event("app_mention")
 def handle_mention(event, say):
     try:
         channel = event["channel"]
@@ -88,6 +88,11 @@ def handle_mention(event, say):
         import traceback
         traceback.print_exc()
         say(f"エラーが発生しました: {str(e)}", thread_ts=thread_ts)
+
+def just_ack(ack):
+    ack() # acknowledge（承認・受信確認）
+
+app.event("app_mention")(ack=just_ack, lazy=[handle_mention])
 
 if __name__ == "__main__":
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
