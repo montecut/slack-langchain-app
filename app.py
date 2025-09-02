@@ -102,9 +102,11 @@ def just_ack(ack):
 
 app.event("app_mention")(ack=just_ack, lazy=[handle_mention])
 
+# ローカル実行のエントリーポイント
 if __name__ == "__main__":
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 
+# Lambda関数のエントリーポイント
 def handler(event, context):
     logger.info("handler called")
     header = event["headers"]
