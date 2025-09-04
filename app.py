@@ -42,6 +42,9 @@ class SlackStreamingCallbackHandler(BaseCallbackHandler):
     def __init__(self, channel, ts):
         self.channel = channel
         self.ts = ts
+        self.interval = CHAT_UPDATE_INTERVAL_SEC
+        # 投稿を更新した累計回数カウンタ
+        self.update_count = 0
 
     def on_llm_new_token(self, token: str, **kwargs) -> None:
         self.message += token
@@ -49,6 +52,12 @@ class SlackStreamingCallbackHandler(BaseCallbackHandler):
         now = time.time()
         if now - self.last_send_time > CHAT_UPDATE_INTERVAL_SEC:
             self.last_send_time = now
+
+            self.update_count += 1
+            # update_countが現在の更新間隔X10より多くなるたびに更新間隔を2倍にする
+            if self.update_count / 10 > self.interval:
+                self.interval = self.interval * 2
+
             app.client.chat_update(channel=self.channel, ts=self.ts, text=f"{self.message}...")
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
