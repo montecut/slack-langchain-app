@@ -1,5 +1,5 @@
 service: LangChainBook-ChatGPTSlackFunction
-frameworkVersion: '3'
+frameworkVersion: '3.40.0'
 
 provider:
   name: aws
@@ -20,6 +20,8 @@ package:
     - '!.gitignore'
     - '!.python-version'
     - '!.git/**'
+    - '!.claude/**'
+    - '!.claude*'
 
 functions:
   app:
